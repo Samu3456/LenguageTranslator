@@ -25,7 +25,7 @@
       max-width: 690px;
       width: 100%;
       padding: 30px;
-      background: #ffffff;
+      background: #fff;
       border-radius: 7px;
       box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
     }
@@ -55,7 +55,7 @@
 <body>
   <div class="container">
     <div class="text-input">
-      <textarea id="from-text" placeholder="Ingresa el texto"></textarea>
+      <textarea id="from-text" placeholder="Enter text"></textarea>
       <select id="from-lang"></select>
       <button id="translate">Translate</button>
       <select id="to-lang"></select>
@@ -64,30 +64,37 @@
   </div>
 
   <script>
-    async function loadLanguages() {
-      let response = await fetch("https://api.mymemory.translated.net/get?q=hello&langpair=en|es");
-      let data = await response.json();
-      let languages = data.matches.map(match => match.segment);
-      let languageOptions = {
-        "en": "English", "es": "Spanish", "fr": "French", "de": "German", "it": "Italian", "zh": "Chinese", "ja": "Japanese", "ru": "Russian", "ar": "Arabic", "hi": "Hindi", "pt": "Portuguese", "bn": "Bengali", "ko": "Korean", "vi": "Vietnamese", "tr": "Turkish", "nl": "Dutch", "pl": "Polish", "sv": "Swedish", "cs": "Czech", "el": "Greek", "he": "Hebrew", "id": "Indonesian", "hu": "Hungarian", "da": "Danish", "fi": "Finnish", "ro": "Romanian", "no": "Norwegian", "th": "Thai", "uk": "Ukrainian" };
-      
-      Object.keys(languageOptions).forEach(lang => {
-        document.getElementById("from-lang").innerHTML += `<option value="${lang}">${languageOptions[lang]}</option>`;
-        document.getElementById("to-lang").innerHTML += `<option value="${lang}">${languageOptions[lang]}</option>`;
-      });
-    }
+    const languages = {
+      "af": "Afrikaans", "sq": "Albanian", "am": "Amharic", "ar": "Arabic", "hy": "Armenian", "az": "Azerbaijani", "eu": "Basque", "bn": "Bengali", "bs": "Bosnian", "bg": "Bulgarian", "ca": "Catalan", "zh": "Chinese", "hr": "Croatian", "cs": "Czech", "da": "Danish", "nl": "Dutch", "en": "English", "et": "Estonian", "fi": "Finnish", "fr": "French", "de": "German", "el": "Greek", "gu": "Gujarati", "he": "Hebrew", "hi": "Hindi", "hu": "Hungarian", "is": "Icelandic", "id": "Indonesian", "it": "Italian", "ja": "Japanese", "kn": "Kannada", "kk": "Kazakh", "ko": "Korean", "lv": "Latvian", "lt": "Lithuanian", "mk": "Macedonian", "ms": "Malay", "ml": "Malayalam", "mr": "Marathi", "mn": "Mongolian", "ne": "Nepali", "no": "Norwegian", "fa": "Persian", "pl": "Polish", "pt": "Portuguese", "pa": "Punjabi", "ro": "Romanian", "ru": "Russian", "sr": "Serbian", "sk": "Slovak", "sl": "Slovenian", "es": "Spanish", "sw": "Swahili", "sv": "Swedish", "ta": "Tamil", "te": "Telugu", "th": "Thai", "tr": "Turkish", "uk": "Ukrainian", "ur": "Urdu", "vi": "Vietnamese", "cy": "Welsh", "xh": "Xhosa", "zu": "Zulu"
+    };
 
-    loadLanguages();
+    const fromLang = document.getElementById("from-lang");
+    const toLang = document.getElementById("to-lang");
+
+    Object.keys(languages).forEach(lang => {
+      fromLang.innerHTML += `<option value="${lang}">${languages[lang]}</option>`;
+      toLang.innerHTML += `<option value="${lang}">${languages[lang]}</option>`;
+    });
 
     document.getElementById("translate").addEventListener("click", () => {
       let text = document.getElementById("from-text").value.trim();
       if (!text) return;
       let from = document.getElementById("from-lang").value;
       let to = document.getElementById("to-lang").value;
-      let url = `https://api.mymemory.translated.net/get?q=${text}&langpair=${from}|${to}`;
+      let url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${from}|${to}`;
+      
       fetch(url)
         .then(response => response.json())
-        .then(data => document.getElementById("to-text").value = data.responseData.translatedText);
+        .then(data => {
+          if (data.responseData.translatedText) {
+            document.getElementById("to-text").value = data.responseData.translatedText;
+          } else {
+            document.getElementById("to-text").value = "Translation not available";
+          }
+        })
+        .catch(() => {
+          document.getElementById("to-text").value = "Error translating text";
+        });
     });
   </script>
 </body>
